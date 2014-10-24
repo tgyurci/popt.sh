@@ -25,7 +25,7 @@ fail() {
 case $DEBUG in
 	[Yy][Ee][Ss])
 		debug() {
-			echo $@ >&2
+			echo "popt.sh: $@" >&2
 		}
 	;;
 	[Nn][Oo])
@@ -39,18 +39,22 @@ case $DEBUG in
 esac
 
 get_real_cmd() {
+	# parameters
 	local cmd
 	cmd="$1"
+
+	# local variables
 	local poptcmd cmdname realcmd
 
 	for poptcmd in "$HOME/.poptcmd" "$PREFIX/etc/poptcmd"; do
 		if [ -f "$poptcmd" ]; then
 			debug "Parsing $poptcmd"
+
 			while read cmdname realcmd; do
 				case "$cmdname" in
 					$cmd) # match line
 						debug "Found command alias: '$realcmd' for '$cmdname'"
-						echo $realcmd
+						echo "'$realcmd'"
 						return 0
 					;;
 					\#*) # ignoring comment
@@ -66,9 +70,12 @@ get_real_cmd() {
 }
 
 get_param_alias() {
+	# parameters
 	local cmd param 
 	cmd="$1"
 	param="$2"
+
+	# local variables
 	local poptrc cmdname aliasname paramalias expansion
 
 	for poptrc in "$HOME/.popt" "$PREFIX/etc/popt"; do
@@ -77,7 +84,7 @@ get_param_alias() {
 			while read cmdname aliasname paramalias expansion; do
 				case "$cmdname" in
 					$cmd) # match line
-						[ "$aliasname" = "alias" ] || fail "Second word must be alias: $aliasname"
+						[ "$aliasname" = "alias" ] || fail "Second word must be 'alias': $aliasname"
 
 						if [ "$paramalias" = "$param" ]; then
 							debug "Found parameter expansion for $param: $expansion"
@@ -95,7 +102,7 @@ get_param_alias() {
 	done
 
 	# No match, return the passed parameter
-	echo "$param"
+	echo "'$param'"
 	return 0
 }
 
@@ -113,4 +120,4 @@ done
 
 debug "Expanded parameters: $params"
 
-"$realcmd" $params
+eval $realcmd $params

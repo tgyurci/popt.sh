@@ -62,7 +62,7 @@ get_real_cmd() {
 					*) # do not match
 					;;
 				esac
-			done <  "$poptcmd"
+			done < "$poptcmd"
 		fi
 	done
 
